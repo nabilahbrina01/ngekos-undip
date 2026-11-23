@@ -2,13 +2,21 @@ import { supabase } from "../config/supabaseClient.js";
 
 const SELECT_WITH_AREA = "*, area:areas(id, name)";
 
+// Pilihan urutan: ?sort=termurah | termahal | terdekat
+const SORT_OPTIONS = {
+  termurah: { column: "price_per_year", ascending: true },
+  termahal: { column: "price_per_year", ascending: false },
+  terdekat: { column: "distance_km", ascending: true },
+};
+
 export const KontrakanModel = {
-  // Filter opsional: ?area_id=...&available=true&search=griya
-  async getAll({ area_id, available, search } = {}) {
+  // Filter opsional: ?area_id=...&available=true&search=griya&sort=terdekat
+  async getAll({ area_id, available, search, sort } = {}) {
+    const order = SORT_OPTIONS[sort] || SORT_OPTIONS.termurah;
     let query = supabase
       .from("kontrakan")
       .select(SELECT_WITH_AREA)
-      .order("price_per_year", { ascending: true });
+      .order(order.column, { ascending: order.ascending });
 
     if (area_id) query = query.eq("area_id", area_id);
     if (available !== undefined) query = query.eq("is_available", available === "true");

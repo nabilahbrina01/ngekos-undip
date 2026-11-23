@@ -3,13 +3,21 @@ import { supabase } from "../config/supabaseClient.js";
 // "area:areas(id, name)" = ikut ambil data area (relasi foreign key area_id)
 const SELECT_WITH_AREA = "*, area:areas(id, name)";
 
+// Pilihan urutan: ?sort=termurah | termahal | terdekat
+const SORT_OPTIONS = {
+  termurah: { column: "price_per_month", ascending: true },
+  termahal: { column: "price_per_month", ascending: false },
+  terdekat: { column: "distance_km", ascending: true },
+};
+
 export const KosModel = {
-  // Filter opsional: ?area_id=...&type=putri&search=melati
-  async getAll({ area_id, type, search } = {}) {
+  // Filter opsional: ?area_id=...&type=putri&search=melati&sort=terdekat
+  async getAll({ area_id, type, search, sort } = {}) {
+    const order = SORT_OPTIONS[sort] || SORT_OPTIONS.termurah;
     let query = supabase
       .from("kos")
       .select(SELECT_WITH_AREA)
-      .order("price_per_month", { ascending: true });
+      .order(order.column, { ascending: order.ascending });
 
     if (area_id) query = query.eq("area_id", area_id);
     if (type) query = query.eq("type", type);
