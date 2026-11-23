@@ -25,7 +25,7 @@ Aplikasi Flutter **hanya** memanggil API buatan sendiri di `https://ngekos-undip
 ```
 ngekos-undip/
 ├── api/                    # Backend: Express.js + Supabase (deploy di Vercel)
-│   ├── database/           # schema.sql, seed.sql, users.sql, favorites.sql
+│   ├── database/           # schema.sql, seed.sql, users.sql, favorites.sql, otp.sql
 │   ├── src/
 │   │   ├── config/         # koneksi Supabase
 │   │   ├── models/         # query ke database
@@ -49,6 +49,8 @@ ngekos-undip/
 ## Fitur dan Halaman
 
 - **Login & Daftar**: autentikasi akun (password di-hash bcrypt, token JWT)
+- **Verifikasi OTP email**: akun baru harus memasukkan kode 6 digit yang dikirim ke email
+- **Lupa password**: reset password dengan kode OTP dari email
 - **Beranda**: sapaan, pencarian cepat, pilihan area, rekomendasi kos
 - **List Kos → Detail Kos**: cari, filter area & tipe (putra/putri/campur)
 - **List Kontrakan → Detail Kontrakan**: cari, filter area & ketersediaan
@@ -65,8 +67,12 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| POST | `/auth/register` | Daftar akun (`name`, `email`, `password`) |
+| POST | `/auth/register` | Daftar akun (`name`, `email`, `password`), kode OTP dikirim ke email |
 | POST | `/auth/login` | Login (`email`, `password`), mengembalikan token |
+| POST | `/auth/verify-otp` | Verifikasi akun (`email`, `code`), mengembalikan token |
+| POST | `/auth/resend-otp` | Kirim ulang kode (`email`, `purpose`: register/reset) |
+| POST | `/auth/forgot-password` | Kirim kode OTP reset password (`email`) |
+| POST | `/auth/reset-password` | Ganti password (`email`, `code`, `password`) |
 | GET | `/auth/me` | Data user yang login (header `Authorization: Bearer <token>`) |
 | GET | `/areas` | Semua area |
 | GET | `/areas/:id` | Detail area |
@@ -85,8 +91,8 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 
 ### Backend (api)
 
-1. Buat project di Supabase, lalu jalankan `api/database/schema.sql`, `seed.sql`, `users.sql`, dan `favorites.sql` di SQL Editor.
-2. Salin `.env.example` menjadi `.env`, lalu isi `SUPABASE_URL`, `SUPABASE_KEY`, dan `JWT_SECRET`.
+1. Buat project di Supabase, lalu jalankan `api/database/schema.sql`, `seed.sql`, `users.sql`, `favorites.sql`, dan `otp.sql` di SQL Editor.
+2. Salin `.env.example` menjadi `.env`, lalu isi `SUPABASE_URL`, `SUPABASE_KEY`, `JWT_SECRET`, `GMAIL_USER`, dan `GMAIL_APP_PASSWORD` (App Password Gmail untuk mengirim OTP).
 3. Jalankan:
    ```bash
    cd api
@@ -117,6 +123,6 @@ Hasil: `app/build/app/outputs/flutter-apk/app-release.apk`
 ## Teknologi
 
 - **Frontend:** Flutter (Dart), `http`, `shared_preferences`, `url_launcher`
-- **Backend:** Node.js, Express.js, `@supabase/supabase-js`, `bcryptjs`, `jsonwebtoken`, `cors`, `dotenv`
+- **Backend:** Node.js, Express.js, `@supabase/supabase-js`, `bcryptjs`, `jsonwebtoken`, `nodemailer`, `cors`, `dotenv`
 - **Database:** PostgreSQL (Supabase)
 - **Deploy:** Vercel

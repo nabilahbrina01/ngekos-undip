@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../utils/app_theme.dart';
 import '../widget/auth_header.dart';
+import 'otp_verification.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -34,19 +35,26 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _loading = true);
     try {
+      final email = _emailController.text.trim();
       await AuthService.instance.register(
         _nameController.text.trim(),
-        _emailController.text.trim(),
+        email,
         _passwordController.text,
       );
-      // Berhasil daftar = langsung login. Tutup halaman ini agar
-      // halaman utama (dari main.dart) terlihat.
-      if (mounted) Navigator.pop(context);
+      // Berhasil daftar = kode OTP dikirim. Ganti halaman ini dengan
+      // halaman verifikasi OTP.
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpVerificationPage(email: email),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -77,8 +85,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) =>
                           (value == null || value.trim().isEmpty)
-                              ? 'Nama wajib diisi'
-                              : null,
+                          ? 'Nama wajib diisi'
+                          : null,
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
@@ -109,8 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           icon: Icon(
                             _obscure ? Icons.visibility : Icons.visibility_off,
                           ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
                       validator: (value) => (value == null || value.length < 6)

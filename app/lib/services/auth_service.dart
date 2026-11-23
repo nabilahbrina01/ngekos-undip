@@ -8,7 +8,18 @@ import '../config/api_config.dart';
 import '../models/user.dart';
 import 'favorite_service.dart';
 
-/// Mengurus login, daftar, dan logout lewat API (/api/auth).
+/// Error dari API auth. [needsVerification] = akun belum verifikasi OTP.
+class AuthException implements Exception {
+  final String message;
+  final bool needsVerification;
+
+  AuthException(this.message, {this.needsVerification = false});
+
+  @override
+  String toString() => message;
+}
+
+/// Mengurus login, daftar, OTP, lupa password, dan logout lewat API (/api/auth).
 /// Token dan data user disimpan di HP agar tetap login walau aplikasi ditutup.
 class AuthService extends ChangeNotifier {
   AuthService._();
@@ -43,14 +54,41 @@ class AuthService extends ChangeNotifier {
     await _saveSession(data);
   }
 
-  // POST /api/auth/register
+  // POST /api/auth/register -> akun dibuat, kode OTP dikirim ke email
   Future<void> register(String name, String email, String password) async {
-    final data = await _post('/auth/register', {
+    await _post('/auth/register', {
       'name': name,
       'email': email,
       'password': password,
     });
+  }
+
+  // POST /api/auth/verify-otp -> kode benar = langsung login
+  Future<void> verifyOtp(String email, String code) async {
+    final data = await _post('/auth/verify-otp', {
+      'email': email,
+      'code': code,
+    });
     await _saveSession(data);
+  }
+
+  // POST /api/auth/resend-otp  (purpose: "register" atau "reset")
+  Future<void> resendOtp(String email, String purpose) async {
+    await _post('/auth/resend-otp', {'email': email, 'purpose': purpose});
+  }
+
+  // POST /api/auth/forgot-password -> kode OTP reset dikirim ke email
+  Future<void> forgotPassword(String email) async {
+    await _post('/auth/forgot-password', {'email': email});
+  }
+
+  // POST /api/auth/reset-password
+  Future<void> resetPassword(String email, String code, String password) async {
+    await _post('/auth/reset-password', {
+      'email': email,
+      'code': code,
+      'password': password,
+    });
   }
 
   Future<void> logout() async {
@@ -79,14 +117,15 @@ class AuthService extends ChangeNotifier {
     try {
       data = jsonDecode(response.body) as Map<String, dynamic>;
     } catch (_) {
-      throw Exception('Server error (kode ${response.statusCode})');
+      throw AuthException('Server error (kode ${response.statusCode})');
     }
     if (response.statusCode == 200 || response.statusCode == 201) {
       return data;
     }
     // Pesan error dari API, misalnya "Email atau password salah"
-    throw Exception(
+    throw AuthException(
       data['error'] ?? 'Terjadi kesalahan (${response.statusCode})',
+      needsVerification: data['needsVerification'] == true,
     );
   }
 

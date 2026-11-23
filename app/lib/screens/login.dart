@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../utils/app_theme.dart';
 import '../widget/auth_header.dart';
+import 'forgot_password.dart';
+import 'otp_verification.dart';
 import 'register.dart';
 
 class LoginPage extends StatefulWidget {
@@ -36,11 +38,26 @@ class _LoginPageState extends State<LoginPage> {
         _emailController.text.trim(),
         _passwordController.text,
       );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
+      // Akun belum verifikasi: buka halaman OTP
+      if (e.needsVerification) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                OtpVerificationPage(email: _emailController.text.trim()),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -54,7 +71,8 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             const AuthHeader(
               title: 'Selamat datang di\nNgekosUndip',
-              subtitle: 'Cari kos & kontrakan di sekitar Universitas Diponegoro',
+              subtitle:
+                  'Cari kos & kontrakan di sekitar Universitas Diponegoro',
             ),
             AuthFormCard(
               child: Form(
@@ -99,15 +117,28 @@ class _LoginPageState extends State<LoginPage> {
                           icon: Icon(
                             _obscure ? Icons.visibility : Icons.visibility_off,
                           ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
                       validator: (value) => (value == null || value.isEmpty)
                           ? 'Password wajib diisi'
                           : null,
                     ),
-                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ForgotPasswordPage(
+                              initialEmail: _emailController.text.trim(),
+                            ),
+                          ),
+                        ),
+                        child: const Text('Lupa password?'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     FilledButton(
                       onPressed: _loading ? null : _submit,
                       child: _loading
