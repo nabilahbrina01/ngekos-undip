@@ -34,4 +34,16 @@ export const UserModel = {
     if (error) throw error;
     return data;
   },
+
+  // Ubah data user berdasarkan email (verifikasi, ganti password, dll.)
+  async updateByEmail(email, fields) {
+    const { data, error } = await supabase
+      .from("users")
+      .update(fields)
+      .eq("email", email)
+      .select(PUBLIC_COLUMNS)
+      .single();
+    if (error) throw error;
+    return data;
+  },
 };
