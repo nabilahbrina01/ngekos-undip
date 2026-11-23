@@ -9,19 +9,18 @@ import authRoutes from "./routes/authRoutes.js"; // BARU
 dotenv.config();
 
 const app = express();
-app.use(cors()); // supaya bisa diakses juga dari Flutter Web / browser
+app.use(cors()); 
 app.use(express.json());
 
-// Halaman cek: buka URL Vercel kamu di browser, harus muncul JSON ini
 app.get("/", (req, res) => {
   res.json({
     name: "NgekosUndip API",
     status: "running",
-    endpoints: ["/api/auth", "/api/areas", "/api/kos", "/api/kontrakan"], // BARU
+    endpoints: ["/api/auth", "/api/areas", "/api/kos", "/api/kontrakan"], 
   });
 });
 
-app.use("/api/auth", authRoutes); // BARU
+app.use("/api/auth", authRoutes); 
 app.use("/api/areas", areaRoutes);
 app.use("/api/kos", kosRoutes);
 app.use("/api/kontrakan", kontrakanRoutes);

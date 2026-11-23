@@ -3,15 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ngekos_undip/main.dart';
 
 void main() {
-  testWidgets('NgekosUndip menampilkan bottom navigation', (
+  testWidgets('Belum login: NgekosUndip menampilkan halaman Login', (
     WidgetTester tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const NgekosUndipApp());
 
-    expect(find.text('Beranda'), findsOneWidget);
-    expect(find.text('Kontrakan'), findsOneWidget);
-    expect(find.text('Favorit'), findsOneWidget);
-    expect(find.text('Profil'), findsWidgets);
+    expect(find.text('Masuk'), findsOneWidget);
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Belum punya akun? Daftar'), findsOneWidget);
   });
 }
