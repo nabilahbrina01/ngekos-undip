@@ -10,6 +10,8 @@ Tugas Akhir Praktikum Pemrograman Perangkat Bergerak (PPB) 2026
 | NIM | 21120123120025 |
 | Program Studi | Teknik Komputer, Universitas Diponegoro |
 
+**Download APK:** [NgekosUndip v1.0](https://github.com/nabilahbrina01/ngekos-undip/releases/latest)
+
 NgekosUndip membantu mahasiswa Undip mencari kos dan kontrakan di sekitar kampus (Tembalang, Sumurboto, Meteseh, Jatimulyo, Banyumanik). Pengguna bisa melihat daftar dan detail kos/kontrakan, mencari dan memfilter, menyimpan favorit, serta login dengan akun sendiri.
 
 ## Arsitektur
