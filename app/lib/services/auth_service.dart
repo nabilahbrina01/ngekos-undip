@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/api_config.dart';
 import '../models/user.dart';
+import 'favorite_service.dart';
 
 /// Mengurus login, daftar, dan logout lewat API (/api/auth).
 /// Token dan data user disimpan di HP agar tetap login walau aplikasi ditutup.
@@ -58,6 +59,7 @@ class AuthService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
+    FavoriteService.instance.clear(); // favorit milik akun ini dikosongkan
     notifyListeners();
   }
 
@@ -84,7 +86,8 @@ class AuthService extends ChangeNotifier {
     }
     // Pesan error dari API, misalnya "Email atau password salah"
     throw Exception(
-        data['error'] ?? 'Terjadi kesalahan (${response.statusCode})');
+      data['error'] ?? 'Terjadi kesalahan (${response.statusCode})',
+    );
   }
 
   Future<void> _saveSession(Map<String, dynamic> data) async {
@@ -95,5 +98,7 @@ class AuthService extends ChangeNotifier {
     await prefs.setString(_tokenKey, _token!);
     await prefs.setString(_userKey, jsonEncode(_user!.toJson()));
     notifyListeners();
+    // Ambil favorit milik akun yang baru login dari API
+    await FavoriteService.instance.load();
   }
 }

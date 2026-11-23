@@ -4,6 +4,7 @@ import '../models/kos.dart';
 import '../services/api_service.dart';
 import '../utils/formatter.dart';
 import '../widget/property_card.dart';
+import '../widget/sort_button.dart';
 import '../widget/state_views.dart';
 import 'kos_detail.dart';
 
@@ -19,13 +20,14 @@ class _KosListPageState extends State<KosListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _keyword = '';
   String _selectedType = 'semua';
+  String _sort = 'termurah'; // dikirim ke API: ?sort=...
 
   static const List<String> _types = ['semua', 'putra', 'putri', 'campur'];
 
   @override
   void initState() {
     super.initState();
-    _kos = ApiService.getKos();
+    _kos = ApiService.getKos(sort: _sort);
   }
 
   @override
@@ -36,11 +38,18 @@ class _KosListPageState extends State<KosListPage> {
 
   Future<void> _refresh() async {
     setState(() {
-      _kos = ApiService.getKos();
+      _kos = ApiService.getKos(sort: _sort);
     });
     try {
       await _kos;
     } catch (_) {}
+  }
+
+  void _changeSort(String sort) {
+    setState(() {
+      _sort = sort;
+      _kos = ApiService.getKos(sort: _sort);
+    });
   }
 
   List<Kos> _applyFilter(List<Kos> list) {
@@ -69,7 +78,10 @@ class _KosListPageState extends State<KosListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Daftar Kos')),
+      appBar: AppBar(
+        title: const Text('Daftar Kos'),
+        actions: [SortButton(value: _sort, onChanged: _changeSort)],
+      ),
       body: Column(
         children: [
           // Kolom pencarian

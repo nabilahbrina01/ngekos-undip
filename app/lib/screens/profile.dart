@@ -10,7 +10,6 @@ class ProfilePage extends StatelessWidget {
   static const String nama = 'Nabilah Brina Assyifa';
   static const String nim = '21120123120025';
   static const String prodi = 'Teknik Komputer, Universitas Diponegoro';
-  static const String github = 'github.com/nabilahbrina01/ngekos-undip';
 
   Future<void> _confirmLogout(BuildContext context) async {
     final yes = await showDialog<bool>(
@@ -53,9 +52,7 @@ class ProfilePage extends StatelessWidget {
             ),
             decoration: const BoxDecoration(
               gradient: AppColors.headerGradient,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(32),
-              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
             ),
             child: Column(
               children: [
@@ -104,11 +101,6 @@ class ProfilePage extends StatelessWidget {
                 title: 'Program Studi',
                 value: prodi,
               ),
-              _InfoTile(
-                icon: Icons.code_rounded,
-                title: 'Source code',
-                value: github,
-              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -124,7 +116,8 @@ class ProfilePage extends StatelessWidget {
                   'mencari kos dan kontrakan di sekitar kampus Tembalang, '
                   'seperti Sumurboto, Meteseh, Jatimulyo, dan Banyumanik. '
                   'Pengguna dapat melihat harga, fasilitas, '
-                  'jarak ke kampus, kontak pemilik, dan menyimpan pilihan '
+                  'jarak ke kampus, menghubungi pemilik lewat WhatsApp, '
+                  'membuka lokasi di Google Maps, dan menyimpan pilihan '
                   'ke daftar favorit.',
                   style: TextStyle(height: 1.5),
                 ),

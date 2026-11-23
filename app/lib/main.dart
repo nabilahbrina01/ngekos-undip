@@ -8,9 +8,10 @@ import 'widget/navigation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Muat sesi login dan daftar favorit yang tersimpan di HP
+  // Muat sesi login yang tersimpan di HP
   await AuthService.instance.load();
-  await FavoriteService.instance.load();
+  // Ambil favorit akun ini dari API (berjalan di belakang, tidak ditunggu)
+  FavoriteService.instance.load();
   runApp(const NgekosUndipApp());
 }
 

@@ -4,6 +4,7 @@ import '../models/kontrakan.dart';
 import '../services/api_service.dart';
 import '../utils/formatter.dart';
 import '../widget/property_card.dart';
+import '../widget/sort_button.dart';
 import '../widget/state_views.dart';
 import 'kontrakan_detail.dart';
 
@@ -19,11 +20,12 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _keyword = '';
   bool _onlyAvailable = false;
+  String _sort = 'termurah'; // dikirim ke API: ?sort=...
 
   @override
   void initState() {
     super.initState();
-    _kontrakan = ApiService.getKontrakan();
+    _kontrakan = ApiService.getKontrakan(sort: _sort);
   }
 
   @override
@@ -34,11 +36,18 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
 
   Future<void> _refresh() async {
     setState(() {
-      _kontrakan = ApiService.getKontrakan();
+      _kontrakan = ApiService.getKontrakan(sort: _sort);
     });
     try {
       await _kontrakan;
     } catch (_) {}
+  }
+
+  void _changeSort(String sort) {
+    setState(() {
+      _sort = sort;
+      _kontrakan = ApiService.getKontrakan(sort: _sort);
+    });
   }
 
   List<Kontrakan> _applyFilter(List<Kontrakan> list) {
@@ -56,7 +65,10 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Daftar Kontrakan')),
+      appBar: AppBar(
+        title: const Text('Daftar Kontrakan'),
+        actions: [SortButton(value: _sort, onChanged: _changeSort)],
+      ),
       body: Column(
         children: [
           Padding(

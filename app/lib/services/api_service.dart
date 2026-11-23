@@ -27,9 +27,9 @@ class ApiService {
     return data.map((json) => Area.fromJson(json)).toList();
   }
 
-  // GET /api/kos
-  static Future<List<Kos>> getKos() async {
-    final List data = await _get('/kos');
+  // GET /api/kos?sort=termurah|termahal|terdekat
+  static Future<List<Kos>> getKos({String sort = 'termurah'}) async {
+    final List data = await _get('/kos?sort=$sort');
     return data.map((json) => Kos.fromJson(json)).toList();
   }
 
@@ -39,9 +39,11 @@ class ApiService {
     return Kos.fromJson(data);
   }
 
-  // GET /api/kontrakan
-  static Future<List<Kontrakan>> getKontrakan() async {
-    final List data = await _get('/kontrakan');
+  // GET /api/kontrakan?sort=termurah|termahal|terdekat
+  static Future<List<Kontrakan>> getKontrakan({
+    String sort = 'termurah',
+  }) async {
+    final List data = await _get('/kontrakan?sort=$sort');
     return data.map((json) => Kontrakan.fromJson(json)).toList();
   }
 

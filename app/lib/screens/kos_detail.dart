@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../models/kos.dart';
 import '../services/api_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatter.dart';
+import '../widget/contact_actions.dart';
 import '../widget/detail_widgets.dart';
 import '../widget/favorite_button.dart';
 import '../widget/network_image_box.dart';
@@ -113,7 +113,12 @@ class _KosDetailPageState extends State<KosDetailPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      MapsButton(
+                        query:
+                            kos.address ??
+                            '${kos.name} ${kos.areaName ?? ''} Semarang',
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           InfoBox(
@@ -152,11 +157,14 @@ class _KosDetailPageState extends State<KosDetailPage> {
               ),
             ],
           ),
-          // Bar bawah: harga + tombol salin kontak pemilik
+          // Bar bawah: harga + tombol chat WhatsApp pemilik
           bottomNavigationBar: _PriceBar(
             price: formatRupiah(kos.pricePerMonth),
             suffix: '/bulan',
             phone: kos.ownerPhone,
+            message:
+                'Halo, saya melihat kos "${kos.name}" di aplikasi NgekosUndip. '
+                'Apakah masih tersedia?',
           ),
         );
       },
@@ -191,11 +199,13 @@ class _PriceBar extends StatelessWidget {
   final String price;
   final String suffix;
   final String? phone;
+  final String message;
 
   const _PriceBar({
     required this.price,
     required this.suffix,
     required this.phone,
+    required this.message,
   });
 
   @override
@@ -248,14 +258,10 @@ class _PriceBar extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: phone == null
                   ? null
-                  : () {
-                      Clipboard.setData(ClipboardData(text: phone!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Nomor pemilik disalin')),
-                      );
-                    },
-              icon: const Icon(Icons.call_rounded, size: 18),
-              label: const Text('Kontak'),
+                  : () =>
+                        openWhatsApp(context, phone: phone!, message: message),
+              icon: const Icon(Icons.chat_rounded, size: 18),
+              label: const Text('WhatsApp'),
             ),
           ),
         ],

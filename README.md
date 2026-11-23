@@ -25,7 +25,7 @@ Aplikasi Flutter **hanya** memanggil API buatan sendiri di `https://ngekos-undip
 ```
 ngekos-undip/
 ├── api/                    # Backend: Express.js + Supabase (deploy di Vercel)
-│   ├── database/           # schema.sql, seed.sql, users.sql
+│   ├── database/           # schema.sql, seed.sql, users.sql, favorites.sql
 │   ├── src/
 │   │   ├── config/         # koneksi Supabase
 │   │   ├── models/         # query ke database
@@ -52,7 +52,9 @@ ngekos-undip/
 - **Beranda**: sapaan, pencarian cepat, pilihan area, rekomendasi kos
 - **List Kos → Detail Kos**: cari, filter area & tipe (putra/putri/campur)
 - **List Kontrakan → Detail Kontrakan**: cari, filter area & ketersediaan
-- **Favorit**: simpan kos/kontrakan favorit
+- **Urutkan**: harga termurah, termahal, atau jarak terdekat (diproses di API)
+- **Hubungi pemilik via WhatsApp** dan **buka lokasi di Google Maps** dari halaman detail
+- **Favorit**: tersimpan di database per akun, jadi tetap ada walau ganti HP
 - **Profil**: data pengguna, info pembuat aplikasi, logout
 
 Navigasi utama menggunakan **Bottom Navigation Bar** (Beranda, Kos, Kontrakan, Favorit, Profil).
@@ -69,18 +71,21 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 | GET | `/areas` | Semua area |
 | GET | `/areas/:id` | Detail area |
 | POST / PUT / DELETE | `/areas`, `/areas/:id` | Tambah / ubah / hapus area |
-| GET | `/kos` | Semua kos. Query opsional: `search`, `area_id`, `type` |
+| GET | `/kos` | Semua kos. Query opsional: `search`, `area_id`, `type`, `sort` (`termurah`/`termahal`/`terdekat`) |
 | GET | `/kos/:id` | Detail kos |
 | POST / PUT / DELETE | `/kos`, `/kos/:id` | Tambah / ubah / hapus kos |
-| GET | `/kontrakan` | Semua kontrakan. Query opsional: `search`, `area_id`, `available` |
+| GET | `/kontrakan` | Semua kontrakan. Query opsional: `search`, `area_id`, `available`, `sort` |
 | GET | `/kontrakan/:id` | Detail kontrakan |
 | POST / PUT / DELETE | `/kontrakan`, `/kontrakan/:id` | Tambah / ubah / hapus kontrakan |
+| GET | `/favorites` | Favorit milik user yang login (wajib token) |
+| POST | `/favorites` | Tambah favorit (`item_type`: kos/kontrakan, `item_id`), wajib token |
+| DELETE | `/favorites/:type/:id` | Hapus favorit, wajib token |
 
 ## Cara Menjalankan
 
 ### Backend (api)
 
-1. Buat project di Supabase, lalu jalankan `api/database/schema.sql`, `seed.sql`, dan `users.sql` di SQL Editor.
+1. Buat project di Supabase, lalu jalankan `api/database/schema.sql`, `seed.sql`, `users.sql`, dan `favorites.sql` di SQL Editor.
 2. Salin `.env.example` menjadi `.env`, lalu isi `SUPABASE_URL`, `SUPABASE_KEY`, dan `JWT_SECRET`.
 3. Jalankan:
    ```bash
@@ -111,7 +116,7 @@ Hasil: `app/build/app/outputs/flutter-apk/app-release.apk`
 
 ## Teknologi
 
-- **Frontend:** Flutter (Dart), `http`, `shared_preferences`
+- **Frontend:** Flutter (Dart), `http`, `shared_preferences`, `url_launcher`
 - **Backend:** Node.js, Express.js, `@supabase/supabase-js`, `bcryptjs`, `jsonwebtoken`, `cors`, `dotenv`
 - **Database:** PostgreSQL (Supabase)
 - **Deploy:** Vercel
