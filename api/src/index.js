@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import areaRoutes from "./routes/areaRoutes.js";
 import kosRoutes from "./routes/kosRoutes.js";
 import kontrakanRoutes from "./routes/kontrakanRoutes.js";
+import authRoutes from "./routes/authRoutes.js"; // BARU
 
 dotenv.config();
 
@@ -16,10 +17,11 @@ app.get("/", (req, res) => {
   res.json({
     name: "NgekosUndip API",
     status: "running",
-    endpoints: ["/api/areas", "/api/kos", "/api/kontrakan"],
+    endpoints: ["/api/auth", "/api/areas", "/api/kos", "/api/kontrakan"], // BARU
   });
 });
 
+app.use("/api/auth", authRoutes); // BARU
 app.use("/api/areas", areaRoutes);
 app.use("/api/kos", kosRoutes);
 app.use("/api/kontrakan", kontrakanRoutes);

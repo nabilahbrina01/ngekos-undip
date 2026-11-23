@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+
+import '../models/kontrakan.dart';
+import '../services/api_service.dart';
+import '../utils/formatter.dart';
+import '../widget/property_card.dart';
+import '../widget/state_views.dart';
+import 'kontrakan_detail.dart';
+
+class KontrakanListPage extends StatefulWidget {
+  const KontrakanListPage({super.key});
+
+  @override
+  State<KontrakanListPage> createState() => _KontrakanListPageState();
+}
+
+class _KontrakanListPageState extends State<KontrakanListPage> {
+  late Future<List<Kontrakan>> _kontrakan;
+  final TextEditingController _searchController = TextEditingController();
+  String _keyword = '';
+  bool _onlyAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _kontrakan = ApiService.getKontrakan();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _kontrakan = ApiService.getKontrakan();
+    });
+    try {
+      await _kontrakan;
+    } catch (_) {}
+  }
+
+  List<Kontrakan> _applyFilter(List<Kontrakan> list) {
+    final keyword = _keyword.toLowerCase();
+    return list.where((item) {
+      final matchAvailable = !_onlyAvailable || item.isAvailable;
+      final matchKeyword =
+          keyword.isEmpty ||
+          item.name.toLowerCase().contains(keyword) ||
+          (item.areaName ?? '').toLowerCase().contains(keyword);
+      return matchAvailable && matchKeyword;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Daftar Kontrakan')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Cari nama kontrakan atau area...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (value) => setState(() => _keyword = value),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: FilterChip(
+                label: const Text('Hanya yang masih tersedia'),
+                selected: _onlyAvailable,
+                onSelected: (value) => setState(() => _onlyAvailable = value),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Kontrakan>>(
+              future: _kontrakan,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return ErrorView(
+                    message: 'Gagal memuat data kontrakan.\n${snapshot.error}',
+                    onRetry: _refresh,
+                  );
+                }
+
+                final list = _applyFilter(snapshot.data ?? []);
+                if (list.isEmpty) {
+                  return const EmptyView(message: 'Kontrakan tidak ditemukan');
+                }
+
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: list.length,
+                    itemBuilder: (context, i) {
+                      final item = list[i];
+                      return PropertyCard(
+                        favoriteType: 'kontrakan',
+                        id: item.id,
+                        imageUrl: item.imageUrl,
+                        title: item.name,
+                        subtitle:
+                            '${item.areaName ?? '-'} · ${item.bedrooms} kamar tidur',
+                        price: formatRupiah(item.pricePerYear),
+                        priceSuffix: '/tahun',
+                        badge: item.isAvailable ? 'Tersedia' : 'Penuh',
+                        badgeColor: item.isAvailable
+                            ? Colors.green
+                            : Colors.grey,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  KontrakanDetailPage(kontrakanId: item.id),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
