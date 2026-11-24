@@ -56,6 +56,7 @@ ngekos-undip/
 - **Beranda**: sapaan, pencarian cepat, pilihan area, rekomendasi kos
 - **List Kos → Detail Kos**: cari, filter area & tipe (putra/putri/campur)
 - **List Kontrakan → Detail Kontrakan**: cari, filter area & ketersediaan
+- **Kelola data (CRUD)**: tambah, ubah, dan hapus kos/kontrakan langsung dari aplikasi (wajib login)
 - **Urutkan**: harga termurah, termahal, atau jarak terdekat (diproses di API)
 - **Hubungi pemilik via WhatsApp** dan **buka lokasi di Google Maps** dari halaman detail
 - **Favorit**: tersimpan di database per akun, jadi tetap ada walau ganti HP
@@ -78,13 +79,13 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 | GET | `/auth/me` | Data user yang login (header `Authorization: Bearer <token>`) |
 | GET | `/areas` | Semua area |
 | GET | `/areas/:id` | Detail area |
-| POST / PUT / DELETE | `/areas`, `/areas/:id` | Tambah / ubah / hapus area |
+| POST / PUT / DELETE | `/areas`, `/areas/:id` | Tambah / ubah / hapus area (wajib token) |
 | GET | `/kos` | Semua kos. Query opsional: `search`, `area_id`, `type`, `sort` (`termurah`/`termahal`/`terdekat`) |
 | GET | `/kos/:id` | Detail kos |
-| POST / PUT / DELETE | `/kos`, `/kos/:id` | Tambah / ubah / hapus kos |
+| POST / PUT / DELETE | `/kos`, `/kos/:id` | Tambah / ubah / hapus kos (wajib token) |
 | GET | `/kontrakan` | Semua kontrakan. Query opsional: `search`, `area_id`, `available`, `sort` |
 | GET | `/kontrakan/:id` | Detail kontrakan |
-| POST / PUT / DELETE | `/kontrakan`, `/kontrakan/:id` | Tambah / ubah / hapus kontrakan |
+| POST / PUT / DELETE | `/kontrakan`, `/kontrakan/:id` | Tambah / ubah / hapus kontrakan (wajib token) |
 | GET | `/favorites` | Favorit milik user yang login (wajib token) |
 | POST | `/favorites` | Tambah favorit (`item_type`: kos/kontrakan, `item_id`), wajib token |
 | DELETE | `/favorites/:type/:id` | Hapus favorit, wajib token |

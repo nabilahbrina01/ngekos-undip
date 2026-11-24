@@ -61,6 +61,12 @@ export const KontrakanModel = {
   async remove(id) {
     const { error } = await supabase.from("kontrakan").delete().eq("id", id);
     if (error) throw error;
+    // Hapus juga dari daftar favorit semua user
+    await supabase
+      .from("favorites")
+      .delete()
+      .eq("item_type", "kontrakan")
+      .eq("item_id", id);
     return { message: "Kontrakan deleted successfully" };
   },
 };

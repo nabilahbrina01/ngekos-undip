@@ -7,6 +7,7 @@ import '../widget/property_card.dart';
 import '../widget/sort_button.dart';
 import '../widget/state_views.dart';
 import 'kos_detail.dart';
+import 'kos_form.dart';
 
 class KosListPage extends StatefulWidget {
   const KosListPage({super.key});
@@ -45,6 +46,14 @@ class _KosListPageState extends State<KosListPage> {
     } catch (_) {}
   }
 
+  Future<void> _openAddForm() async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const KosFormPage()),
+    );
+    if (saved == true) _refresh();
+  }
+
   void _changeSort(String sort) {
     setState(() {
       _sort = sort;
@@ -78,6 +87,12 @@ class _KosListPageState extends State<KosListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Tombol tambah data (Create)
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openAddForm,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Tambah Kos'),
+      ),
       appBar: AppBar(
         title: const Text('Daftar Kos'),
         actions: [SortButton(value: _sort, onChanged: _changeSort)],
@@ -159,14 +174,16 @@ class _KosListPageState extends State<KosListPage> {
                         priceSuffix: '/bulan',
                         badge: 'Kos ${capitalize(kos.type)}',
                         badgeColor: _typeColor(kos.type),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
                                   KosDetailPage(kosId: kos.id),
                             ),
                           );
+                          // Muat ulang: data mungkin diubah/dihapus di detail
+                          _refresh();
                         },
                       );
                     },

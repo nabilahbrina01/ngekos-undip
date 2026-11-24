@@ -105,6 +105,7 @@ class _FavoritePageState extends State<FavoritePage> {
                         subtitle:
                             '${kos.areaName ?? '-'} · ${formatRupiah(kos.pricePerMonth)}/bulan',
                         page: KosDetailPage(kosId: kos.id),
+                        onReturn: _refresh,
                       ),
                     ),
                     if (favKontrakan.isNotEmpty) const _Header('Kontrakan'),
@@ -117,6 +118,7 @@ class _FavoritePageState extends State<FavoritePage> {
                         subtitle:
                             '${item.areaName ?? '-'} · ${formatRupiah(item.pricePerYear)}/tahun',
                         page: KontrakanDetailPage(kontrakanId: item.id),
+                        onReturn: _refresh,
                       ),
                     ),
                   ],
@@ -153,6 +155,7 @@ class _FavoriteTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget page;
+  final VoidCallback onReturn; // muat ulang setelah kembali dari detail
 
   const _FavoriteTile({
     required this.type,
@@ -161,6 +164,7 @@ class _FavoriteTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.page,
+    required this.onReturn,
   });
 
   @override
@@ -178,10 +182,13 @@ class _FavoriteTile extends StatelessWidget {
         title: Text(title),
         subtitle: Text(subtitle),
         trailing: FavoriteButton(type: type, id: id),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => page),
-        ),
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => page),
+          );
+          onReturn();
+        },
       ),
     );
   }

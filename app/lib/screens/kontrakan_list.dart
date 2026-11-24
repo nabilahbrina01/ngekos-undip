@@ -7,6 +7,7 @@ import '../widget/property_card.dart';
 import '../widget/sort_button.dart';
 import '../widget/state_views.dart';
 import 'kontrakan_detail.dart';
+import 'kontrakan_form.dart';
 
 class KontrakanListPage extends StatefulWidget {
   const KontrakanListPage({super.key});
@@ -43,6 +44,14 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
     } catch (_) {}
   }
 
+  Future<void> _openAddForm() async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const KontrakanFormPage()),
+    );
+    if (saved == true) _refresh();
+  }
+
   void _changeSort(String sort) {
     setState(() {
       _sort = sort;
@@ -65,6 +74,12 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Tombol tambah data (Create)
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openAddForm,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Tambah Kontrakan'),
+      ),
       appBar: AppBar(
         title: const Text('Daftar Kontrakan'),
         actions: [SortButton(value: _sort, onChanged: _changeSort)],
@@ -137,14 +152,16 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
                         badgeColor: item.isAvailable
                             ? Colors.green
                             : Colors.grey,
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
                                   KontrakanDetailPage(kontrakanId: item.id),
                             ),
                           );
+                          // Muat ulang: data mungkin diubah/dihapus di detail
+                          _refresh();
                         },
                       );
                     },

@@ -5,10 +5,12 @@ import '../services/api_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatter.dart';
 import '../widget/contact_actions.dart';
+import '../widget/form_widgets.dart';
 import '../widget/detail_widgets.dart';
 import '../widget/favorite_button.dart';
 import '../widget/network_image_box.dart';
 import '../widget/state_views.dart';
+import 'kontrakan_form.dart';
 
 class KontrakanDetailPage extends StatefulWidget {
   final String kontrakanId;
@@ -27,6 +29,38 @@ class _KontrakanDetailPageState extends State<KontrakanDetailPage> {
     super.initState();
     // GET /api/kontrakan/:id
     _kontrakan = ApiService.getKontrakanById(widget.kontrakanId);
+  }
+
+  // Buka form ubah; jika tersimpan, muat ulang detail
+  Future<void> _edit(Kontrakan data) async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => KontrakanFormPage(kontrakan: data),
+      ),
+    );
+    if (saved == true) {
+      setState(() {
+        _kontrakan = ApiService.getKontrakanById(widget.kontrakanId);
+      });
+    }
+  }
+
+  // Konfirmasi lalu DELETE /api/kontrakan/:id
+  Future<void> _delete(String id, String name) async {
+    if (!await confirmDelete(context, name)) return;
+    if (!mounted) return;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ApiService.deleteKontrakan(id);
+      navigator.pop(); // kembali ke daftar, daftar akan dimuat ulang
+      messenger.showSnackBar(SnackBar(content: Text('"$name" dihapus')));
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   @override
@@ -61,6 +95,19 @@ class _KontrakanDetailPageState extends State<KontrakanDetailPage> {
                 pinned: true,
                 title: const Text('Detail Kontrakan'),
                 actions: [
+                  // Ubah data (Update)
+                  _CircleAction(
+                    icon: Icons.edit_rounded,
+                    tooltip: 'Ubah',
+                    onPressed: () => _edit(item),
+                  ),
+                  // Hapus data (Delete)
+                  _CircleAction(
+                    icon: Icons.delete_outline_rounded,
+                    tooltip: 'Hapus',
+                    color: Colors.red.shade700,
+                    onPressed: () => _delete(item.id, item.name),
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: Material(
@@ -267,6 +314,37 @@ class _PriceBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Tombol bulat putih di AppBar (ubah / hapus).
+class _CircleAction extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final Color? color;
+
+  const _CircleAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Material(
+        color: Colors.white,
+        shape: const CircleBorder(),
+        child: IconButton(
+          tooltip: tooltip,
+          icon: Icon(icon, color: color ?? AppColors.navy),
+          onPressed: onPressed,
+        ),
       ),
     );
   }
