@@ -67,13 +67,15 @@ async function checkOtp(email, purpose, code) {
 }
 
 export const AuthController = {
-  // POST /api/auth/register  body: { name, email, password }
+  // POST /api/auth/register  body: { name, email, password, role }
+  // role: "pencari" (default) atau "pemilik"
   // Akun dibuat dalam status belum terverifikasi, lalu kode OTP dikirim ke email.
   async register(req, res) {
     try {
       const name = (req.body.name || "").trim();
       const email = cleanEmail(req.body.email);
       const password = req.body.password || "";
+      const role = req.body.role === "pemilik" ? "pemilik" : "pencari";
 
       if (!name || !email || !password) {
         return res.status(400).json({ error: "Nama, email, dan password wajib diisi" });
@@ -91,9 +93,9 @@ export const AuthController = {
       }
       if (existing) {
         // Pernah daftar tapi belum verifikasi: perbarui data lalu kirim kode baru
-        await UserModel.updateByEmail(email, { name, password_hash });
+        await UserModel.updateByEmail(email, { name, password_hash, role });
       } else {
-        await UserModel.create({ name, email, password_hash });
+        await UserModel.create({ name, email, password_hash, role });
       }
 
       await issueOtp(email, "register");

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../models/kos.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatter.dart';
 import '../widget/contact_actions.dart';
-import '../widget/form_widgets.dart';
 import '../widget/detail_widgets.dart';
 import '../widget/favorite_button.dart';
+import '../widget/form_widgets.dart';
 import '../widget/network_image_box.dart';
 import '../widget/state_views.dart';
 import 'kos_form.dart';
@@ -29,6 +30,12 @@ class _KosDetailPageState extends State<KosDetailPage> {
     super.initState();
     // GET /api/kos/:id
     _kos = ApiService.getKosById(widget.kosId);
+  }
+
+  // Benar jika akun yang login adalah pemilik iklan ini
+  bool _isOwner(String? ownerId) {
+    final user = AuthService.instance.user;
+    return user != null && user.isPemilik && ownerId == user.id;
   }
 
   // Buka form ubah; jika tersimpan, muat ulang detail
@@ -93,19 +100,22 @@ class _KosDetailPageState extends State<KosDetailPage> {
                 pinned: true,
                 title: const Text('Detail Kos'),
                 actions: [
-                  // Ubah data (Update)
-                  _CircleAction(
-                    icon: Icons.edit_rounded,
-                    tooltip: 'Ubah',
-                    onPressed: () => _edit(kos),
-                  ),
-                  // Hapus data (Delete)
-                  _CircleAction(
-                    icon: Icons.delete_outline_rounded,
-                    tooltip: 'Hapus',
-                    color: Colors.red.shade700,
-                    onPressed: () => _delete(kos.id, kos.name),
-                  ),
+                  // Ubah & hapus hanya muncul untuk pemilik iklan ini
+                  if (_isOwner(kos.ownerId)) ...[
+                    // Ubah data (Update)
+                    _CircleAction(
+                      icon: Icons.edit_rounded,
+                      tooltip: 'Ubah',
+                      onPressed: () => _edit(kos),
+                    ),
+                    // Hapus data (Delete)
+                    _CircleAction(
+                      icon: Icons.delete_outline_rounded,
+                      tooltip: 'Hapus',
+                      color: Colors.red.shade700,
+                      onPressed: () => _delete(kos.id, kos.name),
+                    ),
+                  ],
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: Material(

@@ -2,6 +2,7 @@ class Kontrakan {
   final String id;
   final String name;
   final String? areaId;
+  final String? ownerId; // akun pemilik yang memasang iklan
   final String? areaName;
   final int pricePerYear;
   final int bedrooms;
@@ -24,6 +25,7 @@ class Kontrakan {
     required this.facilities,
     required this.isAvailable,
     this.areaId,
+    this.ownerId,
     this.areaName,
     this.address,
     this.description,
@@ -40,6 +42,7 @@ class Kontrakan {
       id: json['id'] as String,
       name: json['name'] ?? '-',
       areaId: json['area_id'],
+      ownerId: json['owner_id'],
       areaName: area?['name'],
       pricePerYear: (json['price_per_year'] as num?)?.toInt() ?? 0,
       bedrooms: (json['bedrooms'] as num?)?.toInt() ?? 0,

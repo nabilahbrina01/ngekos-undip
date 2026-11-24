@@ -43,6 +43,27 @@ class AuthService extends ChangeNotifier {
     final userJson = prefs.getString(_userKey);
     _user = userJson == null ? null : User.fromJson(jsonDecode(userJson));
     notifyListeners();
+    if (_token != null)
+      _refreshUser(); // tidak ditunggu agar aplikasi cepat terbuka
+  }
+
+  // GET /api/auth/me -> perbarui data user (misalnya role) dari server
+  Future<void> _refreshUser() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/auth/me'),
+            headers: {'Authorization': 'Bearer $_token'},
+          )
+          .timeout(_timeout);
+      if (response.statusCode != 200) return;
+      _user = User.fromJson(jsonDecode(response.body));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_userKey, jsonEncode(_user!.toJson()));
+      notifyListeners();
+    } catch (_) {
+      // Tidak ada internet: pakai data yang tersimpan
+    }
   }
 
   // POST /api/auth/login
@@ -55,11 +76,18 @@ class AuthService extends ChangeNotifier {
   }
 
   // POST /api/auth/register -> akun dibuat, kode OTP dikirim ke email
-  Future<void> register(String name, String email, String password) async {
+  // role: "pencari" atau "pemilik"
+  Future<void> register(
+    String name,
+    String email,
+    String password,
+    String role,
+  ) async {
     await _post('/auth/register', {
       'name': name,
       'email': email,
       'password': password,
+      'role': role,
     });
   }
 

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../models/kontrakan.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatter.dart';
 import '../widget/contact_actions.dart';
-import '../widget/form_widgets.dart';
 import '../widget/detail_widgets.dart';
 import '../widget/favorite_button.dart';
+import '../widget/form_widgets.dart';
 import '../widget/network_image_box.dart';
 import '../widget/state_views.dart';
 import 'kontrakan_form.dart';
@@ -29,6 +30,12 @@ class _KontrakanDetailPageState extends State<KontrakanDetailPage> {
     super.initState();
     // GET /api/kontrakan/:id
     _kontrakan = ApiService.getKontrakanById(widget.kontrakanId);
+  }
+
+  // Benar jika akun yang login adalah pemilik iklan ini
+  bool _isOwner(String? ownerId) {
+    final user = AuthService.instance.user;
+    return user != null && user.isPemilik && ownerId == user.id;
   }
 
   // Buka form ubah; jika tersimpan, muat ulang detail
@@ -95,19 +102,22 @@ class _KontrakanDetailPageState extends State<KontrakanDetailPage> {
                 pinned: true,
                 title: const Text('Detail Kontrakan'),
                 actions: [
-                  // Ubah data (Update)
-                  _CircleAction(
-                    icon: Icons.edit_rounded,
-                    tooltip: 'Ubah',
-                    onPressed: () => _edit(item),
-                  ),
-                  // Hapus data (Delete)
-                  _CircleAction(
-                    icon: Icons.delete_outline_rounded,
-                    tooltip: 'Hapus',
-                    color: Colors.red.shade700,
-                    onPressed: () => _delete(item.id, item.name),
-                  ),
+                  // Ubah & hapus hanya muncul untuk pemilik iklan ini
+                  if (_isOwner(item.ownerId)) ...[
+                    // Ubah data (Update)
+                    _CircleAction(
+                      icon: Icons.edit_rounded,
+                      tooltip: 'Ubah',
+                      onPressed: () => _edit(item),
+                    ),
+                    // Hapus data (Delete)
+                    _CircleAction(
+                      icon: Icons.delete_outline_rounded,
+                      tooltip: 'Hapus',
+                      color: Colors.red.shade700,
+                      onPressed: () => _delete(item.id, item.name),
+                    ),
+                  ],
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: Material(

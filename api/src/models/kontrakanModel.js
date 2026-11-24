@@ -11,7 +11,7 @@ const SORT_OPTIONS = {
 
 export const KontrakanModel = {
   // Filter opsional: ?area_id=...&available=true&search=griya&sort=terdekat
-  async getAll({ area_id, available, search, sort } = {}) {
+  async getAll({ area_id, available, search, sort, owner_id } = {}) {
     const order = SORT_OPTIONS[sort] || SORT_OPTIONS.termurah;
     let query = supabase
       .from("kontrakan")
@@ -19,6 +19,7 @@ export const KontrakanModel = {
       .order(order.column, { ascending: order.ascending });
 
     if (area_id) query = query.eq("area_id", area_id);
+    if (owner_id) query = query.eq("owner_id", owner_id);
     if (available !== undefined) query = query.eq("is_available", available === "true");
     if (search) query = query.ilike("name", `%${search}%`);
 
@@ -35,6 +36,17 @@ export const KontrakanModel = {
       .single();
     if (error) throw error;
     return data;
+  },
+
+  // Hanya mengambil owner_id (untuk cek kepemilikan sebelum ubah/hapus)
+  async getOwnerId(id) {
+    const { data, error } = await supabase
+      .from("kontrakan")
+      .select("owner_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? data.owner_id : undefined; // undefined = data tidak ada
   },
 
   async create(payload) {

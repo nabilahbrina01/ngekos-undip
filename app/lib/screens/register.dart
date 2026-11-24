@@ -20,6 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmController = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
+  String _role = 'pencari'; // pencari atau pemilik
 
   @override
   void dispose() {
@@ -40,6 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _nameController.text.trim(),
         email,
         _passwordController.text,
+        _role,
       );
       // Berhasil daftar = kode OTP dikirim. Ganti halaman ini dengan
       // halaman verifikasi OTP.
@@ -77,6 +79,39 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const Text(
+                      'Daftar sebagai',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'pencari',
+                          icon: Icon(Icons.search_rounded),
+                          label: Text('Pencari kos'),
+                        ),
+                        ButtonSegment(
+                          value: 'pemilik',
+                          icon: Icon(Icons.storefront_rounded),
+                          label: Text('Pemilik kos'),
+                        ),
+                      ],
+                      selected: {_role},
+                      onSelectionChanged: (value) =>
+                          setState(() => _role = value.first),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _role == 'pemilik'
+                          ? 'Bisa memasang, mengubah, dan menghapus iklan kos/kontrakan milik sendiri.'
+                          : 'Bisa mencari kos/kontrakan dan menyimpan favorit.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(

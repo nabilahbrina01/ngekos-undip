@@ -85,6 +85,26 @@ class ProfilePage extends StatelessWidget {
                   user?.email ?? '-',
                   style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
                 ),
+                const SizedBox(height: 10),
+                // Role akun: Pemilik kos / Pencari kos
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    user?.roleLabel ?? 'Pencari kos',
+                    style: const TextStyle(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/kos.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../utils/formatter.dart';
 import '../widget/property_card.dart';
 import '../widget/sort_button.dart';
@@ -21,6 +22,7 @@ class _KosListPageState extends State<KosListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _keyword = '';
   String _selectedType = 'semua';
+  bool _onlyMine = false; // khusus pemilik: tampilkan iklan sendiri saja
   String _sort = 'termurah'; // dikirim ke API: ?sort=...
 
   static const List<String> _types = ['semua', 'putra', 'putri', 'campur'];
@@ -69,7 +71,9 @@ class _KosListPageState extends State<KosListPage> {
           keyword.isEmpty ||
           kos.name.toLowerCase().contains(keyword) ||
           (kos.areaName ?? '').toLowerCase().contains(keyword);
-      return matchType && matchKeyword;
+      final matchMine =
+          !_onlyMine || kos.ownerId == AuthService.instance.user?.id;
+      return matchType && matchKeyword && matchMine;
     }).toList();
   }
 
@@ -87,11 +91,16 @@ class _KosListPageState extends State<KosListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Tombol tambah data (Create)
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddForm,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Tambah Kos'),
+      // Tombol tambah data (Create) hanya untuk akun pemilik kos
+      floatingActionButton: ListenableBuilder(
+        listenable: AuthService.instance,
+        builder: (context, _) => (AuthService.instance.user?.isPemilik ?? false)
+            ? FloatingActionButton.extended(
+                onPressed: _openAddForm,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Tambah Kos'),
+              )
+            : const SizedBox.shrink(),
       ),
       appBar: AppBar(
         title: const Text('Daftar Kos'),
@@ -123,18 +132,25 @@ class _KosListPageState extends State<KosListPage> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: _types
-                  .map(
-                    (type) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(capitalize(type)),
-                        selected: _selectedType == type,
-                        onSelected: (_) => setState(() => _selectedType = type),
-                      ),
+              children: [
+                ..._types.map(
+                  (type) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(capitalize(type)),
+                      selected: _selectedType == type,
+                      onSelected: (_) => setState(() => _selectedType = type),
                     ),
-                  )
-                  .toList(),
+                  ),
+                ),
+                if (AuthService.instance.user?.isPemilik ?? false)
+                  FilterChip(
+                    avatar: const Icon(Icons.storefront_rounded, size: 18),
+                    label: const Text('Iklan saya'),
+                    selected: _onlyMine,
+                    onSelected: (value) => setState(() => _onlyMine = value),
+                  ),
+              ],
             ),
           ),
           // List kos dari API

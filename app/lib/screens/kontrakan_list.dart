@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/kontrakan.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../utils/formatter.dart';
 import '../widget/property_card.dart';
 import '../widget/sort_button.dart';
@@ -21,6 +22,7 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
   final TextEditingController _searchController = TextEditingController();
   String _keyword = '';
   bool _onlyAvailable = false;
+  bool _onlyMine = false; // khusus pemilik: tampilkan iklan sendiri saja
   String _sort = 'termurah'; // dikirim ke API: ?sort=...
 
   @override
@@ -67,18 +69,25 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
           keyword.isEmpty ||
           item.name.toLowerCase().contains(keyword) ||
           (item.areaName ?? '').toLowerCase().contains(keyword);
-      return matchAvailable && matchKeyword;
+      final matchMine =
+          !_onlyMine || item.ownerId == AuthService.instance.user?.id;
+      return matchAvailable && matchKeyword && matchMine;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Tombol tambah data (Create)
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddForm,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Tambah Kontrakan'),
+      // Tombol tambah data (Create) hanya untuk akun pemilik kos
+      floatingActionButton: ListenableBuilder(
+        listenable: AuthService.instance,
+        builder: (context, _) => (AuthService.instance.user?.isPemilik ?? false)
+            ? FloatingActionButton.extended(
+                onPressed: _openAddForm,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Tambah Kontrakan'),
+              )
+            : const SizedBox.shrink(),
       ),
       appBar: AppBar(
         title: const Text('Daftar Kontrakan'),
@@ -107,10 +116,23 @@ class _KontrakanListPageState extends State<KontrakanListPage> {
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: FilterChip(
-                label: const Text('Hanya yang masih tersedia'),
-                selected: _onlyAvailable,
-                onSelected: (value) => setState(() => _onlyAvailable = value),
+              child: Wrap(
+                spacing: 8,
+                children: [
+                  FilterChip(
+                    label: const Text('Hanya yang masih tersedia'),
+                    selected: _onlyAvailable,
+                    onSelected: (value) =>
+                        setState(() => _onlyAvailable = value),
+                  ),
+                  if (AuthService.instance.user?.isPemilik ?? false)
+                    FilterChip(
+                      avatar: const Icon(Icons.storefront_rounded, size: 18),
+                      label: const Text('Iklan saya'),
+                      selected: _onlyMine,
+                      onSelected: (value) => setState(() => _onlyMine = value),
+                    ),
+                ],
               ),
             ),
           ),

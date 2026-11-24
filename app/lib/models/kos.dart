@@ -2,6 +2,7 @@ class Kos {
   final String id;
   final String name;
   final String? areaId;
+  final String? ownerId; // akun pemilik yang memasang iklan
   final String? areaName;
   final String type; // putra | putri | campur
   final int pricePerMonth;
@@ -22,6 +23,7 @@ class Kos {
     required this.facilities,
     required this.availableRooms,
     this.areaId,
+    this.ownerId,
     this.areaName,
     this.address,
     this.description,
@@ -39,6 +41,7 @@ class Kos {
       id: json['id'] as String,
       name: json['name'] ?? '-',
       areaId: json['area_id'],
+      ownerId: json['owner_id'],
       areaName: area?['name'],
       type: json['type'] ?? 'campur',
       pricePerMonth: (json['price_per_month'] as num?)?.toInt() ?? 0,

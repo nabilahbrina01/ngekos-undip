@@ -1,7 +1,7 @@
 import { supabase } from "../config/supabaseClient.js";
 
 // Kolom yang aman dikirim ke aplikasi (password_hash TIDAK ikut)
-const PUBLIC_COLUMNS = "id, name, email, created_at";
+const PUBLIC_COLUMNS = "id, name, email, role, created_at";
 
 export const UserModel = {
   // Dipakai saat login: butuh password_hash untuk dicocokkan
@@ -25,10 +25,10 @@ export const UserModel = {
     return data;
   },
 
-  async create({ name, email, password_hash }) {
+  async create({ name, email, password_hash, role }) {
     const { data, error } = await supabase
       .from("users")
-      .insert([{ name, email, password_hash }])
+      .insert([{ name, email, password_hash, role }])
       .select(PUBLIC_COLUMNS)
       .single();
     if (error) throw error;

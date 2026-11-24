@@ -27,13 +27,13 @@ Aplikasi Flutter **hanya** memanggil API buatan sendiri di `https://ngekos-undip
 ```
 ngekos-undip/
 ├── api/                    # Backend: Express.js + Supabase (deploy di Vercel)
-│   ├── database/           # schema.sql, seed.sql, users.sql, favorites.sql, otp.sql
+│   ├── database/           # schema.sql, seed.sql, users.sql, favorites.sql, otp.sql, role.sql
 │   ├── src/
 │   │   ├── config/         # koneksi Supabase
 │   │   ├── models/         # query ke database
 │   │   ├── controllers/    # logika tiap endpoint
 │   │   ├── routes/         # definisi endpoint
-│   │   ├── middleware/     # verifikasi token JWT
+│   │   ├── middleware/     # verifikasi token JWT & role pemilik
 │   │   └── index.js        # entry point server
 │   ├── .env.example
 │   └── vercel.json
@@ -56,7 +56,8 @@ ngekos-undip/
 - **Beranda**: sapaan, pencarian cepat, pilihan area, rekomendasi kos
 - **List Kos → Detail Kos**: cari, filter area & tipe (putra/putri/campur)
 - **List Kontrakan → Detail Kontrakan**: cari, filter area & ketersediaan
-- **Kelola data (CRUD)**: tambah, ubah, dan hapus kos/kontrakan langsung dari aplikasi (wajib login)
+- **Role akun**: saat daftar pilih **Pencari kos** (melihat & menyimpan favorit) atau **Pemilik kos** (memasang iklan)
+- **Kelola iklan (CRUD)**: pemilik kos bisa menambah iklan, serta mengubah dan menghapus iklan miliknya sendiri; filter "Iklan saya"
 - **Urutkan**: harga termurah, termahal, atau jarak terdekat (diproses di API)
 - **Hubungi pemilik via WhatsApp** dan **buka lokasi di Google Maps** dari halaman detail
 - **Favorit**: tersimpan di database per akun, jadi tetap ada walau ganti HP
@@ -70,7 +71,7 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| POST | `/auth/register` | Daftar akun (`name`, `email`, `password`), kode OTP dikirim ke email |
+| POST | `/auth/register` | Daftar akun (`name`, `email`, `password`, `role`: pencari/pemilik), kode OTP dikirim ke email |
 | POST | `/auth/login` | Login (`email`, `password`), mengembalikan token |
 | POST | `/auth/verify-otp` | Verifikasi akun (`email`, `code`), mengembalikan token |
 | POST | `/auth/resend-otp` | Kirim ulang kode (`email`, `purpose`: register/reset) |
@@ -79,13 +80,13 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 | GET | `/auth/me` | Data user yang login (header `Authorization: Bearer <token>`) |
 | GET | `/areas` | Semua area |
 | GET | `/areas/:id` | Detail area |
-| POST / PUT / DELETE | `/areas`, `/areas/:id` | Tambah / ubah / hapus area (wajib token) |
-| GET | `/kos` | Semua kos. Query opsional: `search`, `area_id`, `type`, `sort` (`termurah`/`termahal`/`terdekat`) |
+| POST / PUT / DELETE | `/areas`, `/areas/:id` | Tambah / ubah / hapus area (khusus pemilik) |
+| GET | `/kos` | Semua kos. Query opsional: `search`, `area_id`, `type`, `owner_id`, `sort` (`termurah`/`termahal`/`terdekat`) |
 | GET | `/kos/:id` | Detail kos |
-| POST / PUT / DELETE | `/kos`, `/kos/:id` | Tambah / ubah / hapus kos (wajib token) |
+| POST / PUT / DELETE | `/kos`, `/kos/:id` | Tambah kos (khusus pemilik); ubah / hapus hanya iklan milik sendiri |
 | GET | `/kontrakan` | Semua kontrakan. Query opsional: `search`, `area_id`, `available`, `sort` |
 | GET | `/kontrakan/:id` | Detail kontrakan |
-| POST / PUT / DELETE | `/kontrakan`, `/kontrakan/:id` | Tambah / ubah / hapus kontrakan (wajib token) |
+| POST / PUT / DELETE | `/kontrakan`, `/kontrakan/:id` | Tambah kontrakan (khusus pemilik); ubah / hapus hanya iklan milik sendiri |
 | GET | `/favorites` | Favorit milik user yang login (wajib token) |
 | POST | `/favorites` | Tambah favorit (`item_type`: kos/kontrakan, `item_id`), wajib token |
 | DELETE | `/favorites/:type/:id` | Hapus favorit, wajib token |
@@ -94,7 +95,7 @@ Base URL: `https://ngekos-undip.vercel.app/api`
 
 ### Backend (api)
 
-1. Buat project di Supabase, lalu jalankan `api/database/schema.sql`, `seed.sql`, `users.sql`, `favorites.sql`, dan `otp.sql` di SQL Editor.
+1. Buat project di Supabase, lalu jalankan `api/database/schema.sql`, `seed.sql`, `users.sql`, `favorites.sql`, `otp.sql`, dan `role.sql` di SQL Editor.
 2. Salin `.env.example` menjadi `.env`, lalu isi `SUPABASE_URL`, `SUPABASE_KEY`, `JWT_SECRET`, `GMAIL_USER`, dan `GMAIL_APP_PASSWORD` (App Password Gmail untuk mengirim OTP).
 3. Jalankan:
    ```bash
